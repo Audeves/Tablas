@@ -111,39 +111,63 @@ public class Tabla extends javax.swing.JFrame {
 //        if((!"".equals(campo))){
 //            where = "WHERE codigo "+campo+"";
 //        }
+        String user = "root";
+        String password = "1234";
+        final String connectionString
+                = "jdbc:mysql://localhost:3306/TIENDA?serverTimezone=UTC";
+
+        Connection connection = null;
+        Statement statement = null;
+        ResultSet resultSet = null;
+
+        DefaultTableModel modelo = new DefaultTableModel();
+        jtProductos.setModel(modelo);
         try {
-            DefaultTableModel modelo = new DefaultTableModel();
-            jtProductos.setModel(modelo);
+            connection = DriverManager
+                    .getConnection(connectionString,
+                            user,
+                            password);
+            statement = connection.createStatement();
 
-            PreparedStatement ps = null;
-            ResultSet rs = null;
-            Conexion conn = new Conexion();
-            Connection con = conn.getConexion();
-
-            String sql = "SELECT codigo, nombre, precio, cantidad FROM producto";
-            System.out.println(sql);
-            ps = con.prepareStatement(sql);
-            rs = ps.executeQuery();
-
-            ResultSetMetaData rsMd = rs.getMetaData();
+            resultSet = statement.executeQuery("SELECT codigo, nombre, precio, cantidad FROM producto");
+            ResultSetMetaData rsMd = resultSet.getMetaData();
             int cantidadColumnas = rsMd.getColumnCount();
-            
             modelo.addColumn("Codigo");
             modelo.addColumn("Nombre");
             modelo.addColumn("Precio");
             modelo.addColumn("Cantidad");
-            while (rs.next()) {
+            while (resultSet.next()) {
                 Object[] filas = new Object[cantidadColumnas];
 
                 for (int i = 0; i < cantidadColumnas; i++) {
 
-                    filas[i] = rs.getObject(i+1);
-                    
+                    filas[i] = resultSet.getObject(i + 1);
+
                 }
                 modelo.addRow(filas);
             }
-        } catch (SQLException ex) {
-            System.err.println(ex.toString());
+        } catch (SQLException e) {
+            System.err.println(e.getMessage());
+        } finally {
+            // Clean up
+            if (resultSet != null) {
+                try {
+                    resultSet.close();
+                } catch (SQLException ex) {
+                }
+            }
+            if (statement != null) {
+                try {
+                    statement.close();
+                } catch (SQLException ex) {
+                }
+            }
+            if (connection != null) {
+                try {
+                    connection.close();
+                } catch (SQLException ex) {
+                }
+            }
         }
     }//GEN-LAST:event_btnCargarActionPerformed
 
